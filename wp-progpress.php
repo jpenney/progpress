@@ -201,13 +201,13 @@ function jcp_progpress_print_options_form() {
 }
 
 function jcp_pp_css_head() {
-    $wp = get_bloginfo('wpurl');
-    $css_url = $wp . '/wp-content/plugins/wp-progpress/wp-progpress.php?jcp_pp_action=css';
-       print('<link rel="stylesheet" type="text/css" href="' . $css_url . '"/>');
+  $wp = get_bloginfo('wpurl');
+  $pp_file = basename(__FILE__);
+  $pp_dir = basename(dirname(__FILE__));
+  $css_url = $wp . '/wp-content/plugins/' . $pp_dir . '/' . $pp_file .
+    '?jcp_pp_action=css';
+  print('<link rel="stylesheet" type="text/css" href="' . $css_url . '"/>');
 }
-
-       
-
 
 if (!empty($_REQUEST['jcp_pp_action'])) {
   switch ($_REQUEST['jcp_pp_action']) {
