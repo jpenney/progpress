@@ -3,7 +3,7 @@
 Plugin Name: ProgPress
 Plugin URI: http://jasonpenney.net/wordpress-plugins/progpress/
 Description: CSS Based progress meters
-Version: 0.8
+Version: 0.8.1
 Author: Jason Penney
 Author URI: http://jasonpenney.net/
 
