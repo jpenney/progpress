@@ -1,9 +1,9 @@
 <?php
 /*
 Plugin Name: ProgPress
-Plugin URI: http://jasonpenney.net/
+Plugin URI: http://jasonpenney.net/wordpress-plugins/progpress/
 Description: CSS Based progress meters
-Version: 0.1
+Version: 0.8
 Author: Jason Penney
 Author URI: http://jasonpenney.net/
 
@@ -108,8 +108,21 @@ function jcp_progpress_modify_menu() {
 }
 
 function jcp_progpress_update_options() {
+  if (version_compare(phpversion(),'5.0.0') < 0) {
+	jcp_progpress_do_update_options();
+  } else {
+	try {
+		jcp_progpress_do_update_options();
+	 } catch(Exception $e) {
+         	echo '<div id="message" class="error fade"><p>'.
+		'Failed to update options</p></div>';
+ 	 }
+  }
+}
+	
+function jcp_progpress_do_update_options() {
 
-  try {
+  //try {
     $filter_the_content = '';
     $filter_text_widget = '';
     $include_css = '';
@@ -130,10 +143,10 @@ function jcp_progpress_update_options() {
     update_option('jcp_pp_include_css',
 		  $include_css);
     echo '<div id="message" class="updated fade"><p>Options saved.</p></div>';
-  } catch(Exception $e) {
-    echo '<div id="message" class="error fade"><p>'.
-      'Failed to update options</p></div>';
-  }
+ // } catch(Exception $e) {
+ //   echo '<div id="message" class="error fade"><p>'.
+ //     'Failed to update options</p></div>';
+ // }
 }
 
 function jcp_progpress_print_options_form() {
@@ -205,6 +218,7 @@ div.jcp_pp { margin: 0 auto; padding: 0; text-align: center; width:200px; }
 div.jcp_pp_title { font-weight: bold; }
 div.jcp_pp_meter { overflow: hidden; width: 100%; height: 20px; border: 1px solid #000; padding: 2px; }   
 div.jcp_pp_meter div {height: 100%; float: left; background-color: #000; }
+.widget_text div.jcp_pp { width: 90%; }
 <?php
          break;
        default:
