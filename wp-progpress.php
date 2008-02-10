@@ -46,21 +46,26 @@ function jcp_progpress_generate_meter($title,$goal,$current,$previous=0,$label="
   if ($goal == 0) {
     return '';
   }
-
+  $goal_label = "Goal: " . $goal;
+  $prog_label = $current;
+  $new_label = '';	
   $new_width = 0;
   if ($previous > 0) {
     $new = $current - $previous;
     $new_width = (int)(($new/$goal)*100) ;
     $current_width = (int)(($previous/$goal)*100);
+    $prog_label = $previous;
+    $new_label = $new;
   } else {
     $current_width= (int)(($current/$goal)*100);
   }
-  
+ 
+   
   $ret = '<div class="jcp_pp">'.
     '<div class="jcp_pp_title">'.$title.'</div>'.
-    '<div class="jcp_pp_meter">'.
-    '<div class="jcp_pp_prog" style="width:'.$current_width.'%"><!--*--></div>'.
-    '<div class="jcp_pp_new" style="width:'.$new_width.'%"><!--*--></div>'.
+    '<div class="jcp_pp_meter" '. jcp_progpress_generate_title($goal_label,$label) . ' >'.
+    '<div class="jcp_pp_prog" '. jcp_progpress_generate_title($prog_label,$label) .' style="width:'.$current_width.'%"><!--*--></div>'.
+    '<div class="jcp_pp_new" ' . jcp_progpress_generate_title($new_label,$label) .  ' style="width:'.$new_width.'%"><!--*--></div>'.
     '</div>'.
     '<span class="jcp_pp_count">' . $current . '/' . $goal;
   if (strcmp("",$label) != 0) {
@@ -69,6 +74,18 @@ function jcp_progpress_generate_meter($title,$goal,$current,$previous=0,$label="
   $ret .= '</span>' . '</div>';
   return $ret;
 } 
+
+function jcp_progpress_generate_title($value,$label) {
+  $ret = '';
+  if (strcmp('',$value) != 0) {
+    $ret = 'title="' . $value;
+    if (strcmp('',$label) != 0) {
+      $ret .= " " . $label;
+    }
+    $ret .= '"';
+  }
+  return $ret;
+}
 
 
 /* options */
@@ -208,6 +225,9 @@ function jcp_pp_css_head() {
     '?jcp_pp_action=css';
   print('<link rel="stylesheet" type="text/css" href="' . $css_url . '"/>');
 }
+
+       
+
 
 if (!empty($_REQUEST['jcp_pp_action'])) {
   switch ($_REQUEST['jcp_pp_action']) {
