@@ -3,7 +3,7 @@
 Plugin Name: ProgPress
 Plugin URI: http://jasonpenney.net/wordpress-plugins/progpress/
 Description: CSS Based progress meters
-Version: 0.8
+Version: 0.8.2
 Author: Jason Penney
 Author URI: http://jasonpenney.net/
 
@@ -52,20 +52,19 @@ function jcp_progpress_generate_meter($title,$goal,$current,$previous=0,$label="
   $new_width = 0;
   if ($previous > 0) {
     $new = $current - $previous;
-    $new_width = (int)(($new/$goal)*100) ;
+    $new_width = (int)(($new/$goal)*100)+1 ;
     $current_width = (int)(($previous/$goal)*100);
     $prog_label = $previous;
     $new_label = $new;
   } else {
     $current_width= (int)(($current/$goal)*100);
   }
- 
-   
-  $ret = '<div class="jcp_pp">'.
-    '<div class="jcp_pp_title">'.$title.'</div>'.
-    '<div class="jcp_pp_meter" '. jcp_progpress_generate_title($goal_label,$label) . ' >'.
-    '<div class="jcp_pp_prog" '. jcp_progpress_generate_title($prog_label,$label) .' style="width:'.$current_width.'%"><!--*--></div>'.
-    '<div class="jcp_pp_new" ' . jcp_progpress_generate_title($new_label,$label) .  ' style="width:'.$new_width.'%"><!--*--></div>'.
+  $isfeed = is_feed(); 
+  $ret = '<div class="jcp_pp"'. ($isfeed ? ' style="width: 80%; max-width:200px;margin:0 auto;padding:0;text-align:center;_width:200px;" ' :'') .'>'.
+    '<div class="jcp_pp_title"'. ($isfeed ? ' style="font-weight: bold" ' : '') . '>'.$title.'</div>'.
+    '<div class="jcp_pp_meter" '. jcp_progpress_generate_title($goal_label,$label) . ($isfeed ? ' style="border: 1px solid #000; height: 20px; overflow: hidden; padding: 2px; width: 100%;" ' : '') . ' >'.
+    '<div class="jcp_pp_prog" '. jcp_progpress_generate_title($prog_label,$label) .' style="width:'.$current_width.'%;' . ($isfeed ? ' background-color: #000; float: left; height: 100%' : '') .'"><!--*--></div>'.
+    '<div class="jcp_pp_new" ' . jcp_progpress_generate_title($new_label,$label) .  ' style="width:'.$new_width.'%;'. ($isfeed ? ' background-color: #000; float: left; height: 100%' : '') .'"><!--*--></div>'.
     '</div>'.
     '<span class="jcp_pp_count">' . $current . '/' . $goal;
   if (strcmp("",$label) != 0) {
@@ -154,9 +153,9 @@ function jcp_progpress_do_update_options() {
       $filter_text_widget = 'on';
     }
     update_option('jcp_pp_filter_the_content',
-		  $filter_the_content);
+		  $filter_the_content,12);
     update_option('jcp_pp_filter_text_widget',
-		  $filter_text_widget);
+		  $filter_text_widget,12);
     update_option('jcp_pp_include_css',
 		  $include_css);
     echo '<div id="message" class="updated fade"><p>Options saved.</p></div>';
@@ -250,11 +249,11 @@ div.jcp_pp_meter div {height: 100%; float: left; background-color: #000; }
     add_action('admin_menu','jcp_progpress_modify_menu');
       
     if (get_option('jcp_pp_filter_the_content') != '') {
-       add_filter('the_content','jcp_progpress_filter');
+       add_filter('the_content','jcp_progpress_filter',100);
     }
        
     if (get_option('jcp_pp_filter_text_widget') != '') {
-       add_filter('widget_text','jcp_progpress_filter');
+       add_filter('widget_text','jcp_progpress_filter',100);
     }
 
     if (get_option('jcp_pp_include_css') != '') {
