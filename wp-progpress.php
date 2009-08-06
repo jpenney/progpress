@@ -3,7 +3,7 @@
 Plugin Name: ProgPress
 Plugin URI: http://jasonpenney.net/wordpress-plugins/progpress/
 Description: CSS Based progress meters
-Version: 0.8.2
+Version: 0.8.5
 Author: Jason Penney
 Author URI: http://jasonpenney.net/
 
@@ -24,18 +24,22 @@ Copyright 2007  Jason Penney (email : jpenney@jczorkmid.net )
 	     
 */
 
+$jcp_progpress_version='0.8.5';
+
+define( 'PP_BASENAME', plugin_basename( __FILE__ ) );
+define( 'PP_BASEFOLDER', plugin_basename( dirname( __FILE__ ) ) );
+define( 'PP_FILENAME', str_replace( FB_BASEFOLDER.'/', '', plugin_basename(__FILE__) ) );
+define('PP_CSS_URL',  WP_PLUGIN_URL . '/progpress/styles/progpress_default.css');
+define('PP_JS_ADMIN', WP_PLUGIN_URL .'/progpress/js/admin.js');
+ 
 
 
 function jcp_progpress_filter($text) {
-  //$match = "/<!--progpress\|([^\|]+)\|(\d+)\|(\d+)(\|(\d+))?(\|([^\|]+))?-->/e";
   $match = "/<!--progpress\|([^>]+)-->/e";
-#  $replace = "jcp_generate_progpress_meter('\\1','\\2','\\3','\\4','\\5')";
   $replace = "call_user_func_array(jcp_progpress_generate_meter,explode('|','\\1'))";
   $text = preg_replace($match, $replace, $text);
-
   return $text;
 }
-
 
 function jcp_progpress_generate_meter($title,$goal,$current,$previous=0,$label="") {
 
@@ -87,176 +91,159 @@ function jcp_progpress_generate_title($value,$label) {
 }
 
 
-/* options */
-
-function jcp_progpress_set_options() {
-  add_option('jcp_pp_filter_the_content','on','Display progress meters in posts');
-  add_option('jcp_pp_filter_text_widget','on','Display progress meters in Text Widgets');
-  add_option('jcp_pp_include_css','on','Use built-in styles');
-}
-
-function jcp_progpress_unset_options() {
-  delete_option('jcp_pp_filter_the_content');
-  delete_option('jcp_pp_filter_text_widget');
-  delete_option('jcp_pp_include_css');
-}
-
 /* admin */
 
 function jcp_progpress_admin_options() { 
-  echo '<div class="wrap"><h2>ProgPress Options</h2>';
-  
-  if($_REQUEST['submit']) {
-    jcp_progpress_update_options();
-  }
-  jcp_progpress_print_options_form();
-  echo '</div>';
-}
-
-function jcp_progpress_modify_menu() {
-  add_options_page(
-		   'ProgPress',
-		   'ProgPress',
-		   5,
-		   __FILE__,
-		   'jcp_progpress_admin_options'
-		   );
-}
-
-function jcp_progpress_update_options() {
-  if (version_compare(phpversion(),'5.0.0') < 0) {
-	jcp_progpress_do_update_options();
-  } else {
-	try {
-		jcp_progpress_do_update_options();
-	 } catch(Exception $e) {
-         	echo '<div id="message" class="error fade"><p>'.
-		'Failed to update options</p></div>';
- 	 }
-  }
-}
-	
-function jcp_progpress_do_update_options() {
-
-  //try {
-    $filter_the_content = '';
-    $filter_text_widget = '';
-    $include_css = '';
-    
-    if ($_REQUEST['jcp_pp_filter_the_content']) {
-      $filter_the_content = 'on';
-    }
-    if ($_REQUEST['jcp_pp_include_css']) {
-      $include_css = 'on';
-    }
-    if ($_REQUEST['jcp_pp_filter_text_widget']) {
-      $filter_text_widget = 'on';
-    }
-    update_option('jcp_pp_filter_the_content',
-		  $filter_the_content,12);
-    update_option('jcp_pp_filter_text_widget',
-		  $filter_text_widget,12);
-    update_option('jcp_pp_include_css',
-		  $include_css);
-    echo '<div id="message" class="updated fade"><p>Options saved.</p></div>';
- // } catch(Exception $e) {
- //   echo '<div id="message" class="error fade"><p>'.
- //     'Failed to update options</p></div>';
- // }
-}
-
-function jcp_progpress_print_options_form() {
-  $checked = " checked ";
-  $filter_the_content_checked = "";
-  $filter_text_widget_checked = "";
-  $include_css_checked = "";
-  if (get_option('jcp_pp_filter_the_content') != '') {
-    $filter_the_content_checked = $checked;
-  }
-  if (get_option('jcp_pp_filter_text_widget') != '') {
-    $filter_text_widget_checked = $checked;
-  }
-  if (get_option('jcp_pp_include_css') != '') {
-    $include_css_checked = $checked;
-  }
-
 ?>
-       <form method="post" action="options.php">
-	 <?php wp_nonce_field('update-options') ?>
-	 <label for="jcp_pp_filter_the_content">
-	   Display progress meters in posts:
-	   <input type="checkbox" id="jcp_pp_filter_the_content" 
-		  name="jcp_pp_filter_the_content" <?php
-      echo $filter_the_content_checked; 
-		  ?> />
-	 </label>
-	 <br/>
-	 <label for="jcp_pp_filter_text_widget">
-	   Display progress meters in Text Widgets:
-	   <input type="checkbox" id="jcp_pp_filter_text_widget" 
-		  name="jcp_pp_filter_text_widget" <?php
-      echo $filter_text_widget_checked; 
-		  ?> />
-	 </label>
-	 <br/>
-	 <label for="jcp_pp_include_css">
-	   Use build-in styles:
-	   <input type="checkbox" id="jcp_pp_include_css" 
-		  name="jcp_pp_include_css" <?php
-      echo $include_css_checked; 
-		  ?> />
-	 </label>
-	 <input type="hidden" name="action" value="update" />
-	 <input type="hidden" name="page_options" 
-		value="jcp_pp_filter_the_content,jcp_pp_filter_text_widget,jcp_pp_include_css" />
-	 <p class="submit">
-	   <input type="submit" name="Submit" value="<?php _e('Update Options »') ?>" />
-	 </p>
-       </form>
+  <div class="wrap jcp_progpress">
+  <h2>ProgPress Options</h2>
+  <form method="post" action="options.php">
+  <?php 
+     settings_fields('jcp_progpress_options');
+     $options = get_option('jcp_progpress');    
+?>
+     <p class="submit">
+     <input type="submit" class="button-primary" value="<?php _e('Save Changes') ?>" />     
+     </p>
+  <table class="form-table">
+     <tr valign="top">
+     <th scope="row">
+     <label for="jcp_progpress[filter_the_content]">
+     Display progress meters in posts:</label>
+     </th>
+     <td>
+     <input type="checkbox" id="jcp_progpress[filter_the_content]" name="jcp_progpress[filter_the_content]" value="1"  <?php checked(1, $options['filter_the_content']); ?> />
+     </td>
+     </tr>
+     <tr valign="top">
+     <th scope="row">
+     <label for="jcp_progpress[filter_text_widget]">
+     Display progress meters in Text Widgets:</label>
+     </th>
+     <td>
+     <input type="checkbox" id="jcp_progpress[filter_text_widget]" name="jcp_progpress[filter_text_widget]" value="1" <?php checked('1',$options['filter_text_widget']); ?> />
+     </td>
+     </tr>
+     <tr valign="top">
+     <th scope="row">
+     <label for="jcp_progpress[include_css]">
+     Use build-in styles:</label>
+     </th>
+     <td>
+     <input type="checkbox" id="jcp_progpress[include_css]" name="jcp_progpress[include_css]" value="1" <?php checked('1',$options['include_css']); ?> />
+     </td>
+     </tr>
+     <tr valign="top">
+     <th scope="row">
+     <a id="jcp_progpress_preview_styles" href="<?php print(PP_CSS_URL); ?>" target="_blank">View Default Styles:</a>
+     </th>
+     <td>
+     </td>
+     </tr>
+     <tr id="jcp_progpress_sample_output" style="display:none" valign="top">
+     <th scope="row">Sample Output:</th>
+     <td><h4>Markup</h4><pre style="display: block; margin: 0 auto;text-align:center;">&lt;!--progpress|ProgPress Sample|1000|700|500|Label--&gt;</pre>
+     <h4>Output</h4>
+     <?php echo jcp_progpress_generate_meter("ProgPress Sample", 1000, 700, 500, "Label"); ?>
+     </td>
+     </tr>
+     </table>
+     <p class="submit">
+     <input type="submit" class="button-primary" value="<?php _e('Save Changes') ?>" />     
+     </p>
+     </form>
+     </div>
      <?php
 }
 
-function jcp_pp_css_head() {
-  $wp = get_bloginfo('wpurl');
-  $pp_file = basename(__FILE__);
-  $pp_dir = basename(dirname(__FILE__));
-  $css_url = $wp . '/wp-content/plugins/' . $pp_dir . '/' . $pp_file .
-    '?jcp_pp_action=css';
-  print('<link rel="stylesheet" type="text/css" href="' . $css_url . '"/>');
+function jcp_progpress_modify_menu() {
+  add_options_page('ProgPress Options','ProgPress', 8,
+                   PP_BASENAME,
+                   'jcp_progpress_admin_options');
 }
 
-       
+function jcp_progpress_admin_init() {
+  global $jcp_progpress_version;
+  register_setting('jcp_progpress_options', 'jcp_progpress',
+                   'jcp_progpress_options_validate');
+  wp_register_script('jcp_progpress_admin', PP_JS_ADMIN, array('jquery'),
+                     $jcp_progpress_version);
+  wp_enqueue_script('jcp_progpress_admin');
+    
+}
+
+function jcp_progpress_activation() {
+  $options = jcp_progpress_options_validate();
+  // if old options exist, update to new system
+  foreach( $new_options as $key => $value ) {
+    if( $existing = get_option( 'jcp_pp_' . $key ) ) {
+      $options[$key] = $existing;
+      delete_option( 'jcp_pp_' . $key );
+    }
+  }
+  add_option('jcp_progpress', $new_options);
+};
 
 
-if (!empty($_REQUEST['jcp_pp_action'])) {
-  switch ($_REQUEST['jcp_pp_action']) {
-       case 'css':
-	 header("Content-type: text/css"); 
-?>
-div.jcp_pp { margin: 0 auto; padding: 0; text-align: center; width:200px; }
-div.jcp_pp_title { font-weight: bold; }
-div.jcp_pp_meter { overflow: hidden; width: 100%; height: 20px; border: 1px solid #000; padding: 2px; }   
-div.jcp_pp_meter div {height: 100%; float: left; background-color: #000; }
-.widget_text div.jcp_pp { width: 90%; }
-<?php
-         break;
-       default:
-         die();
-   } 
-} else {
-    register_activation_hook(__FILE__,'jcp_progpress_set_options');
-    register_deactivation_hook(__FILE__,'jcp_progpress_unset_options');
-    add_action('admin_menu','jcp_progpress_modify_menu');
-      
-    if (get_option('jcp_pp_filter_the_content') != '') {
+
+function jcp_progpress_options_validate($input) {
+  $input['filter_the_content'] = ( $input['filter_the_content'] == 1 ? 1 :0);
+  $input['filter_text_widget'] = ( $input['filter_text_widget'] == 1 ? 1 :0);
+  $input['include_css'] = ( $input['include_css'] == 1 ? 1 :0);
+  return $input;
+}
+
+function jcp_progpress_print_styles() {
+  global $jcp_progpress_version;
+   wp_register_style('jcp_progpress_styles',PP_CSS_URL,array(),
+                    $jcp_progpress_version);
+  wp_enqueue_style('jcp_progpress_styles');
+}
+
+
+function jcp_progpress_init() {
+
+
+  if(!is_admin()) {
+    $options = get_option('jcp_progpress');
+    if ($options['filter_the_content'] == 1) {
        add_filter('the_content','jcp_progpress_filter',100);
     }
        
-    if (get_option('jcp_pp_filter_text_widget') != '') {
+    if ($options['filter_text_widget'] == 1) {
        add_filter('widget_text','jcp_progpress_filter',100);
     }
 
-    if (get_option('jcp_pp_include_css') != '') {
-      add_action('wp_head', 'jcp_pp_css_head');
+    if ($options['include_css'] == 1) {
+      // high priority to ensure theme styles can override more easily
+      add_action('wp_print_styles', 'jcp_progpress_print_styles', 1);
     }
+  }
 }
+
+function jcp_progpress_row_meta($links, $file) {
+  if ($file == PP_BASENAME) {
+    $links = jcp_progpress_action_links($links);
+  }
+  return $links;
+}
+
+function jcp_progpress_action_links($links) {
+    array_unshift($links, 
+                  sprintf('<a href="options-general.php?page=%s">%s</a>', 
+                          PP_FILENAME, __('Settings')));
+    return $links;
+}
+
+if (function_exists('plugin_row_meta')) {
+  add_filter('plugin_row_meta','jcp_progpress_row_meta');
+} else {
+  add_filter('plugin_action_links_'.PP_BASENAME,'jcp_progpress_action_links');
+}
+
+
+
+register_activation_hook(__FILE__,'jcp_progpress_activation');
+add_action('admin_init','jcp_progpress_admin_init');
+add_action('admin_menu','jcp_progpress_modify_menu');
+add_action('init','jcp_progpress_init');
