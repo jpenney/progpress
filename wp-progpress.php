@@ -3,7 +3,7 @@
 Plugin Name: ProgPress
 Plugin URI: http://jasonpenney.net/wordpress-plugins/progpress/
 Description: CSS Based progress meters
-Version: 0.8.5
+Version: 0.8.6
 Author: Jason Penney
 Author URI: http://jasonpenney.net/
 
@@ -24,11 +24,11 @@ Copyright 2007  Jason Penney (email : jpenney@jczorkmid.net )
 	     
 */
 
-$jcp_progpress_version='0.8.5';
+$jcp_progpress_version='0.8.6';
 
 define( 'PP_BASENAME', plugin_basename( __FILE__ ) );
 define( 'PP_BASEFOLDER', plugin_basename( dirname( __FILE__ ) ) );
-define( 'PP_FILENAME', str_replace( FB_BASEFOLDER.'/', '', plugin_basename(__FILE__) ) );
+define( 'PP_FILENAME', PP_BASEFOLDER.'/'. plugin_basename(__FILE__) );
 define('PP_CSS_URL',  WP_PLUGIN_URL . '/progpress/styles/progpress_default.css');
 define('PP_JS_ADMIN', WP_PLUGIN_URL .'/progpress/js/admin.js');
  
@@ -36,7 +36,7 @@ define('PP_JS_ADMIN', WP_PLUGIN_URL .'/progpress/js/admin.js');
 
 function jcp_progpress_filter($text) {
   $match = "/<!--progpress\|([^>]+)-->/e";
-  $replace = "call_user_func_array(jcp_progpress_generate_meter,explode('|','\\1'))";
+  $replace = "call_user_func_array('jcp_progpress_generate_meter',explode('|','\\1'))";
   $text = preg_replace($match, $replace, $text);
   return $text;
 }
@@ -56,8 +56,11 @@ function jcp_progpress_generate_meter($title,$goal,$current,$previous=0,$label="
   $new_width = 0;
   if ($previous > 0) {
     $new = $current - $previous;
-    $new_width = (int)(($new/$goal)*100)+1 ;
+    $new_width = (int)(($new/$goal)*100);
     $current_width = (int)(($previous/$goal)*100);
+    if ($new_width + $current_width != 100) {
+      $new_width++;
+    }
     $prog_label = $previous;
     $new_label = $new;
   } else {

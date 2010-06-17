@@ -1,10 +1,10 @@
 === ProgPress ===
 Contributors: jczorkmid 
 Donate link: http://jasonpenney.net/donate
-Tags: progress, meter, bar, graph
+Tags: progress, meter, bar, graph, wordcount, word meter
 Requires at least: 2.2
-Tested up to: 2.8.3
-Stable tag: 0.8.5
+Tested up to: 3.0
+Stable tag: 0.8.6
 	
 A Progress Meter Plugin for WordPress
 
