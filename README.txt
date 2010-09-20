@@ -230,6 +230,6 @@ more. Upgrade today!
 == Thanks ==
 
 Special thanks to [K. L. Kerr](http://www.penrefe.com/), [Chris
-Miller](http:://ctmiller.net/), [Debbie
+Miller](http://ctmiller.net/), [Debbie
 Ohi](http://www.inkygirl.com/), and [Scott
 Philips](http://scottphillips.org/) for their feedback and support.
