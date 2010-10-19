@@ -3,7 +3,7 @@
 Plugin Name: ProgPress
 Plugin URI: http://jasonpenney.net/wordpress-plugins/progpress/
 Description: Easily insert progress meters into your content and/or sidebars.
-Version: 1.0
+Version: 1.1
 Author: Jason Penney
 Author URI: http://jasonpenney.net/
 
@@ -24,16 +24,53 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 */
 
-$jcp_progpress_version='1.0';
+/**
+ * @package ProgPress
+ * @version 1.1
+ * @since 0.1
+ */
 
+/**
+ * Current ProgPress version
+ */
+define('JCP_PP_VERSION', 1.1);;
+
+/**
+ * @ignore
+ */
 define( 'PP_BASENAME', plugin_basename( __FILE__ ) );
+/**
+ * @ignore
+ */
 define( 'PP_BASEFOLDER', plugin_basename( dirname( __FILE__ ) ) );
+/**
+ * @ignore
+ */
 define( 'PP_FILENAME',  plugin_basename( __FILE__ ) );
+/**
+ * URL to default style sheet.
+ */
 define( 'PP_CSS_URL',  WP_PLUGIN_URL . '/progpress/styles/progpress_default.css' );
+/**
+ * URL to admin.js
+ */
 define( 'PP_JS_ADMIN', WP_PLUGIN_URL .'/progpress/js/admin.js' );
- 
 
+/**
+ * @package ProgPress
+ * @version 1.1
+ * @since 0.1
+ */
 
+/**
+ * Comment based filter for 'the_content'.
+ *
+ * Creates meters to replace <!--progpress--> comments.
+ *
+ * @deprecated replaced by shortcode.
+ * @param string text to filter
+ * @return string filtered text
+ */
 function jcp_progpress_filter( $text ) {
   $match = "/<!--progpress\|([^>]+)-->/e";
   $replace = "call_user_func_array('jcp_progpress_generate_meter',explode('|','\\1'))";
@@ -41,10 +78,31 @@ function jcp_progpress_filter( $text ) {
   return $text;
 }
 
+/**
+ * Generate ProgPress meter
+ *
+ * Generates meter based on input parameters.
+ * 
+ * @param string $title 
+ * @param int $goal 
+ * @param int $current 
+ * @param int $previous (optional) defaults to 0
+ * @param string $label (optional)
+ * @param string $separator (optional) defaults to '/'
+ * @param string $class (optional)
+ * @param string $prefix (optional)
+ * @param string $error (optional) if set, will display instead of meter
+ * @access public
+ * @return HTML markup of progress meter.
+ */
 function jcp_progpress_generate_meter( $title, $goal, $current, $previous=0,
                                        $label="", $separator='/', $class='',
-                                       $prefix='' ) {
+                                       $prefix='', $error='') {
 
+  /** @todo Add filter(s) */
+  if ($error) {
+    return "<div><b>ProgPress Error:</b><i>$error</i></div>";
+  }
   if ($previous == '') {
     $previous = 0;
   }
@@ -56,7 +114,7 @@ function jcp_progpress_generate_meter( $title, $goal, $current, $previous=0,
   $prog_label = $current;
   $new_label = '';	
   $new_width = 0;
-  if ($previous > 0) {
+  if ($previous > 0 && $current < $goal) {
     $new = $current - $previous;
     $new_width = (int)(($new/$goal)*100);
     $current_width = (int)(($previous/$goal)*100);
@@ -67,6 +125,9 @@ function jcp_progpress_generate_meter( $title, $goal, $current, $previous=0,
     $new_label = $new;
   } else {
     $current_width= (int)(($current/$goal)*100);
+    if ($current_width > 100) {
+      $current_width = 100;
+    }
   }
   $isfeed = is_feed(); 
   $class = trim('jcp_pp ' . $class);
@@ -93,6 +154,15 @@ function jcp_progpress_generate_meter( $title, $goal, $current, $previous=0,
   return $ret;
 } 
 
+/**
+ * Generates title attribute for meter markup.
+ * 
+ * @param string $value 
+ * @param string $label 
+ * @access public
+ * @return string 'title="text" ' or ''
+ * @todo add filter
+ */
 function jcp_progpress_generate_title($value,$label) {
   $ret = '';
   if (strcmp('',$value) != 0) {
@@ -107,17 +177,18 @@ function jcp_progpress_generate_title($value,$label) {
 
 /* shortcode */
 // [progpress title="title" goal="100" current="50" previous="10" label="percent"]
+
+/**
+ * Processes [progpress] shortcode
+ * 
+ * @param array $atts User defined attributes in shortcode tag.
+ * @access public
+ * @return string HTML markup of meter.
+ */
 function jcp_progpress_progpress_func($atts) {
-  $opts = (shortcode_atts(array(
-                                'title' => '',
-                                'goal' => 0,
-                                'current' => 0,
-                                'previous' => 0,
-                                'label' => '',
-                                'separator' => '/',
-                                'class' => '',
-                                'prefix' => ''
-                                ), $atts));
+  $opts = apply_filters('jcp_progpress_shortcode_atts',
+                        array(),
+                        $atts);
   return jcp_progpress_generate_meter($opts['title'],
                                       $opts['goal'],
                                       $opts['current'],
@@ -125,25 +196,54 @@ function jcp_progpress_progpress_func($atts) {
                                       $opts['label'],
                                       $opts['separator'],
                                       $opts['class'],
-                                      $opts['prefix']
+                                      $opts['prefix'],
+                                      $opts['error']
                                       );
   
 }
-add_shortcode('progpress', 'jcp_progpress_progpress_func');
 
+/**
+ * Hooks into jcp_progpress_shortcode_atts.
+ *
+ * Parses out user attributes from shortcode.
+ * 
+ * @param array $opts Contains arguments to pass to 
+ * {@link jcp_progpress_generate_meter}, parsed out of {@link $atts}.
+ * @param array $atts User defined attributes in shortcode tag.
+ * @static
+ * @access public
+ * @return Combined and filtered attribute list.
+ * @see shortcode_atts
+ */
+function jcp_progpress_shortcode_atts_default($opts,$atts) {
+  return shortcode_atts(array(
+                              'title' => '',
+                              'goal' => 0,
+                              'current' => 0,
+                              'previous' => 0,
+                              'label' => '',
+                              'separator' => '/',
+                              'class' => '',
+                              'prefix' => '',
+                              'error' => '',
+                              ), $atts);
+}
 
 /* admin */
 
+/**
+ * ProgPress Settings form
+ * 
+ * @access public
+ * @return void
+ */
 function jcp_progpress_admin_options() { 
-?>
-  <div class="wrap jcp_progpress">
+  ?><div class="wrap jcp_progpress">
   <h2>ProgPress</h2>
-  <form method="post" action="options.php">
-  <?php 
+  <form method="post" action="options.php"><?php 
      settings_fields('jcp_progpress_options');
      $options = get_option('jcp_progpress');    
-?>
-  <h3>Options</h3>
+     ?><h3>Options</h3>
   <table class="form-table">
      <tr valign="top">
      <th scope="row">
@@ -192,8 +292,7 @@ function jcp_progpress_admin_options() {
      <h3>Examples</h3>
      <a class="button-secondary" id="jcp_progpress_preview_styles" href="<?php print(PP_CSS_URL); ?>" target="_blank">Load Examples</a>
      <div id="jcp_progpress_sample_output" style="display:none" valign="top">
-     <h4>Output</h4>
-     <?php
+     <h4>Output</h4><?php
      $meter_markup =  jcp_progpress_generate_meter("ProgPress Sample", 1000, 
                                                    700, 500, "things");
      echo $meter_markup; ?>
@@ -218,62 +317,107 @@ function jcp_progpress_admin_options() {
      echo htmlspecialchars($meter_src);
      ?>
      </pre>
-     </div>
-     <?php
+     </div><?php
 }
 
+/**
+ * Insert ProgPress Options page into menu.
+ * 
+ * @access public
+ * @return void
+ */
 function jcp_progpress_modify_menu() {
   add_options_page('ProgPress Options','ProgPress', 8,
                    PP_BASENAME,
                    'jcp_progpress_admin_options');
 }
 
+/**
+ * Initialize plugin admin
+ * 
+ * @access public
+ * @return void
+ */
 function jcp_progpress_admin_init() {
-  global $jcp_progpress_version;
   register_setting('jcp_progpress_options', 'jcp_progpress',
                    'jcp_progpress_options_validate');
   wp_register_script('jcp_progpress_admin', PP_JS_ADMIN, array('jquery'),
-                     $jcp_progpress_version);
+                     JCP_PP_VERSION);
   wp_enqueue_script('jcp_progpress_admin');
     
 }
 
+/**
+ * Activate plugin.
+ * 
+ * @access public
+ * @return void
+ */
 function jcp_progpress_activation() {
-  $options = jcp_progpress_options_validate();
+  $options = array();
+  $options = jcp_progpress_options_validate(array('include_css' => 1));
   // if old options exist, update to new system
-  foreach( $new_options as $key => $value ) {
+  foreach( $options as $key => $value ) {
     if( $existing = get_option( 'jcp_pp_' . $key ) ) {
       $options[$key] = $existing;
       delete_option( 'jcp_pp_' . $key );
     }
-  }
-  add_option('jcp_progpress', $new_options);
+    }
+  add_option('jcp_progpress', $options);
+
 };
 
 
 
+/**
+ * Validate/Sanitize ProgPress Options
+ * 
+ * @param array $input unsanitized options
+ * @access public
+ * @return array sanitized options
+ */
 function jcp_progpress_options_validate($input) {
-  $input['filter_the_content'] = ( $input['filter_the_content'] == 1 ? 1 : 0 );
-  $input['filter_text_widget'] = ( $input['filter_text_widget'] == 1 ? 1 : 0 );
-  $input['include_css'] = ( $input['include_css'] == 0 ? 0 : 1 );
-  $input['shortcode_text_widget'] = ( $input['shortcode_text_widget'] == 1 ? 
-                                      1 : 0 );
+  $bool_options = array('filter_the_content',
+                        'filter_text_widget',
+                        'include_css',
+                        'shortcode_text_widget');
+  foreach ($bool_options as $bool_option) {
+    $input[$bool_option] = 
+      (array_key_exists($bool_option,$input) && 
+       ($input[$bool_option] == 1) ) ? 1 : 0;
+  }
+
   return $input;
 }
 
+/**
+ * Enqueue default styles.
+ * 
+ * @access public
+ * @return void
+ */
 function jcp_progpress_print_styles() {
-  global $jcp_progpress_version;
   wp_register_style('jcp_progpress_styles',PP_CSS_URL,array(),
-                    $jcp_progpress_version);
+                    JCP_PP_VERSION);
   wp_enqueue_style('jcp_progpress_styles');
 }
 
 
+/**
+ * Initialize plugin.
+ * 
+ * @access public
+ * @return void
+ */
 function jcp_progpress_init() {
-
-
   if( !is_admin() ) {
     $options = get_option('jcp_progpress');
+
+    add_shortcode('progpress', 'jcp_progpress_progpress_func');
+    add_filter('jcp_progpress_shortcode_atts', 
+               'jcp_progpress_shortcode_atts_default',
+               1, 2);
+
     if ($options['filter_the_content'] == 1) {
        add_filter('the_content','jcp_progpress_filter',100);
     }
@@ -297,6 +441,14 @@ function jcp_progpress_init() {
   }
 }
 
+/**
+ * Insert link to ProgPress Options page on plugin listing
+ * 
+ * @param array $links 
+ * @param string $file 
+ * @access public
+ * @return array 
+ */
 function jcp_progpress_row_meta($links, $file) {
   if ($file == PP_BASENAME) {
     $links = jcp_progpress_action_links($links);
@@ -304,11 +456,18 @@ function jcp_progpress_row_meta($links, $file) {
   return $links;
 }
 
+/**
+ * Generate link for {@link jcp_progpress_row_meta}
+ * 
+ * @param mixed $links 
+ * @access public
+ * @return void
+ */
 function jcp_progpress_action_links($links) {
-    array_unshift($links, 
-                  sprintf('<a href="options-general.php?page=%s">%s</a>', 
-                          PP_FILENAME, __('Settings')));
-    return $links;
+  array_push($links, 
+             sprintf('<a href="options-general.php?page=%s">%s</a>', 
+                     PP_FILENAME, __('Settings')));
+  return $links;
 }
 
 if (function_exists('plugin_row_meta')) {

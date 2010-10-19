@@ -4,7 +4,7 @@ Donate link: http://jasonpenney.net/donate
 Tags: progress, meter, bar, graph, wordcount, word meter, goal, tracking, counter, thermometer, writing, fundraiser, donations, NaNoWriMo
 Requires at least: 2.2
 Tested up to: 3.0.1
-Stable tag: 1.0
+Stable tag: 1.1
 	
 Easily insert progress meters into your content and/or sidebars.
 
@@ -19,7 +19,9 @@ include them in text widgets.
 
 To insert a meter simply use the `[progpress]` shortcode:
 
-> `[progpress title="My Project" goal="100000" current="1234"]`
+`
+[progpress title="My Project" goal="100000" current="1234"]
+`
 
 The `[progpress]` shortcode has the following options:
 
@@ -85,7 +87,9 @@ back-ported).  It can be enabled on the *ProgPress* settings page.
 You add a progress meter by including the following in a post or in a
 text widget: 
 
-> `<!--progpress|title|goal|current|previous|label-->`
+`
+<!--progpress|title|goal|current|previous|label-->
+`
 
 Only these five options are supported, only the first three are
 required.
@@ -112,7 +116,9 @@ meters render in RSS readers.
 
 1. This meter was generated using the default styles. 
 
-   > `[progpress title="defaults" goal="180000" current="73023" previous="71398" label="words"]`
+    `
+    [progpress title="defaults" goal="180000" current="73023" previous="71398" label="words"]
+`
 
 2. Make the meter blue and remove padding.
 
@@ -126,7 +132,9 @@ div.jcp_pp_new {
     background-color: #22f; 
 }`
     
-    > `[progpress tile="Test" goal="50000" current="48000"]`
+     `
+[progpress tile="Test" goal="50000" current="48000"]
+`
 
 3. Blue meters with 3D borders.
 
@@ -166,9 +174,17 @@ div.jcp_pp_prog,div.jcp_pp_new {
    background-image:url(pp_bg_current.jpg); 
 }`
     
-    > `[progpress title="Test Also" goal="500" current="350" label="pages"]`
+     `
+[progpress title="Test Also" goal="500" current="350" label="pages"]
+`
 
 == Changelog ==
+
+= 1.1 =
+
+* Added the *ProgPress - NaNoWriMo Support* plugin
+* Added `jcp_progpress_shortcode_atts` filter
+* Added phpdoc
 
 = 1.0 =
 
@@ -213,11 +229,27 @@ div.jcp_pp_prog,div.jcp_pp_new {
 
 == Upgrade Notice ==
 
+= 1.1 =
+This version adds a new plugin for NaNoWriMo.  Just use [progpress
+nanowrimo=*uid*] to track your progress!
+
 = 1.0 =
 This version adds the [progpress] shortcode, option to enable (all)
 shortcodes in text widgets, pretty printing of large numbers, optional
 prefix ($, etc.), markup tweaks to allow more styling flexibility, and
 more. Upgrade today!
+
+
+== NaNoWriMo Support ==
+
+If you are participating in NaNoWriMo, ProgPress can automatically
+track your progress.  Just enable the additional *ProgPress -
+NaNoWriMo Support* plugin (in addition to ProgPress), and set the
+`nanowrimo` attribute to your NaNoWriMo user id.
+
+`
+[progpress title="My NaNoWriMo Progress" nanowrimo="136732" label="words"]
+`
 
 == More Info ==
 
