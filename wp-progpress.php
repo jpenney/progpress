@@ -3,7 +3,7 @@
 Plugin Name: ProgPress
 Plugin URI: http://jasonpenney.net/wordpress-plugins/progpress/
 Description: Easily insert progress meters into your content and/or sidebars.
-Version: 1.1
+Version: 1.2
 Author: Jason Penney
 Author URI: http://jasonpenney.net/
 
@@ -33,7 +33,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 /**
  * Current ProgPress version
  */
-define('JCP_PP_VERSION', 1.1);;
+define('JCP_PP_VERSION', 1.2);;
 
 /**
  * @ignore
@@ -130,25 +130,32 @@ function jcp_progpress_generate_meter( $title, $goal, $current, $previous=0,
     }
   }
   $isfeed = is_feed(); 
-  $class = trim('jcp_pp ' . $class);
+  $classes = array();
+  $classes[0] = 'jcp_pp';
+  foreach (explode(' ', $class) as $c) {
+    $classes[] = sanitize_html_class($c);
+  }
+  $class = trim(implode(' ', $classes));
   
   $ret = '<div class="'.$class.'"'. 
     ($isfeed ? ' style="width: 80%; max-width:200px;margin:0 auto;padding:0;text-align:center;_width:200px;" ' :'') .'>'.
-    '<div class="jcp_pp_title"'. ($isfeed ? ' style="font-weight: bold" ' : '') . '>'.$title.'</div>'.
+    '<div class="jcp_pp_title"'. ($isfeed ? ' style="font-weight: bold" ' : '') . '>' . $title . '</div>'.
     '<div class="jcp_pp_meter" '. jcp_progpress_generate_title($goal_label,$label) . ($isfeed ? ' style="border: 1px solid #000; height: 20px; overflow: hidden; padding: 2px; width: 100%;" ' : '') . ' >'.
     '<div class="jcp_pp_prog" '. jcp_progpress_generate_title($prog_label,$label) .' style="width:'.$current_width.'%;' . ($isfeed ? ' background-color: #000; float: left; height: 100%' : '') .'"><!--*--></div>'.
     '<div class="jcp_pp_new" ' . jcp_progpress_generate_title($new_label,$label) .  ' style="width:'.$new_width.'%;'. ($isfeed ? ' background-color: #000; float: left; height: 100%' : '') .'"><!--*--></div>'.
     '</div>'.
     '<span class="jcp_pp_count">'.
     '<span class="jcp_pp_current">' . 
-    ($prefix ? '<span class="jcp_pp_prefix">'.$prefix.'</span>' : '') .
-    number_format($current) . '</span>' .
+    ($prefix ? '<span class="jcp_pp_prefix">'.$prefix.
+     '</span>' : '') .
+    number_format_i18n($current) . '</span>' .
     '<span class="jcp_pp_separator">' . $separator .'</span>'.
     '<span class="jcp_pp_goal">' . 
     ($prefix ? '<span class="jcp_pp_prefix">'.$prefix.'</span>' : '') .
-    number_format($goal) . '</span>';
+    number_format_i18n($goal) . '</span>';
   if (strcmp("",$label) != 0) {
-    $ret .= ' <span class="jcp_pp_label">' . $label . '</span>';
+    $ret .= ' <span class="jcp_pp_label">' . $label . 
+      '</span>';
   }
   $ret .= '</span></div>';
   return $ret;
@@ -166,11 +173,11 @@ function jcp_progpress_generate_meter( $title, $goal, $current, $previous=0,
 function jcp_progpress_generate_title($value,$label) {
   $ret = '';
   if (strcmp('',$value) != 0) {
-    $ret = 'title="' . $value;
+    $attr = $value;
     if (strcmp('',$label) != 0) {
-      $ret .= " " . $label;
+      $attr .= " " . $label;
     }
-    $ret .= '"';
+    $ret = 'title="' . esc_attr($attr) . '"';
   }
   return $ret;
 }
@@ -289,6 +296,7 @@ function jcp_progpress_admin_options() {
      <input type="submit" class="button-primary" value="<?php _e('Save Changes') ?>" />     
      </p>
      </form>
+     <div id="jcp_progpress_preview_container" style="display:none">
      <h3>Examples</h3>
      <a class="button-secondary" id="jcp_progpress_preview_styles" href="<?php print(PP_CSS_URL); ?>" target="_blank">Load Examples</a>
      <div id="jcp_progpress_sample_output" style="display:none" valign="top">
@@ -317,6 +325,7 @@ function jcp_progpress_admin_options() {
      echo htmlspecialchars($meter_src);
      ?>
      </pre>
+     </div>
      </div><?php
 }
 
@@ -327,11 +336,18 @@ function jcp_progpress_admin_options() {
  * @return void
  */
 function jcp_progpress_modify_menu() {
-  add_options_page('ProgPress Options','ProgPress', 8,
-                   PP_BASENAME,
-                   'jcp_progpress_admin_options');
+  $page = add_options_page('ProgPress Options','ProgPress', 8,
+                           PP_BASENAME,
+                           'jcp_progpress_admin_options');
+  
+  add_action('admin_print_styles-' . $page, 
+             'jcp_progpress_admin_styles');
 }
 
+function jcp_progpress_admin_styles() {
+  wp_enqueue_script('jcp_progpress_admin');
+}
+ 
 /**
  * Initialize plugin admin
  * 
@@ -343,8 +359,6 @@ function jcp_progpress_admin_init() {
                    'jcp_progpress_options_validate');
   wp_register_script('jcp_progpress_admin', PP_JS_ADMIN, array('jquery'),
                      JCP_PP_VERSION);
-  wp_enqueue_script('jcp_progpress_admin');
-    
 }
 
 /**
@@ -475,8 +489,6 @@ if (function_exists('plugin_row_meta')) {
 } else {
   add_filter('plugin_action_links_'.PP_BASENAME,'jcp_progpress_action_links');
 }
-
-
 
 register_activation_hook(__FILE__,'jcp_progpress_activation');
 add_action('admin_init','jcp_progpress_admin_init');
