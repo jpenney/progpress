@@ -2,8 +2,8 @@
 /*
 Plugin Name: ProgPress - NaNoWriMo Support
 Plugin URI: http://jasonpenney.net/wordpress-plugins/progpress/
-Description: Adds support for NaNoWriMo API to ProgPress ([progpress nanowrimo=*user_id* ])
-Version: 1.1
+Description: Adds support for NaNoWriMo API to ProgPress ([progpress nanowrimo=*username* ])
+Version: 1.2
 Author: Jason Penney
 Author URI: http://jasonpenney.net/
 
@@ -39,7 +39,6 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  * This file holds the actual guts of the plugin
  */
 require_once(dirname(__FILE__) . '/php/class.JCP_ProgPress_NaNoWriMo.php');
-
 if (class_exists("JCP_ProgPress_NaNoWriMo")) {
   register_activation_hook(__FILE__,
                            array('JCP_ProgPress_NaNoWriMo',

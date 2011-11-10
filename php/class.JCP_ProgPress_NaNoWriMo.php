@@ -45,7 +45,7 @@ if (!class_exists("JCP_ProgPress_NaNoWriMo")) {
       $this->_result = array();
       $this->_parser = null;
       $this->_api_query_url = 
-        'http://www.nanowrimo.org/wordcount_api/wchistory/%1$d';
+        'http://www.nanowrimo.org/wordcount_api/wchistory/%1$s';
     }
 
     /* XML Parser */
@@ -126,41 +126,51 @@ if (!class_exists("JCP_ProgPress_NaNoWriMo")) {
      * Data is stored as a transient for up to two hours.  It is also
      * cached in the database as a fall back in case the API is down.
      *
-     * @param int $uid NaNoWriMo User ID.
+     * @param str $username NaNoWriMo User Name.
      * @access public
      * @return array containing (partial) results for NaNoWrimo Work Count 
      * API call.  Any errors encountered will be stored in $result['ERROR'].
      */
-    public function get_history($uid) {
-      if (!is_numeric($uid)) {
+    public function get_history($username) {
+      if (is_numeric($username)) {
         $result = array();
-        $result['ERROR'] = "user id is not numeric";
+        $result['ERROR'] = "Please switch to using your username";
         return $result;
       }
-      $trans_id = "jcp_pp_nanowrimo_$uid";
+      $trans_id = "jcp_pp_nanowrimo_$username";
       $cached = true;
-      // check for transient data first
-      if (false === ( $data = get_transient($trans_id) ) || true) {
+      // check for transient data first to prevent
+      // hammering on server
+      if (false === ( $data = get_transient($trans_id) )) {
+        // no data in transient, let's try again
         $cached = false;
-        $query_url = sprintf($this->_api_query_url,$uid);
+        $query_url = sprintf($this->_api_query_url, $username);
         $data =  wp_remote_retrieve_body( wp_remote_get( $query_url ) );
-        set_transient( $trans_id, $data, 60*60*2 );
+        // set initial transient with short timeout
+        // in case it contains an error
+        set_transient( $trans_id, $data, 10 /*60*/ );
       }
       $result = null;
       if ($data != null) {
         $result = $this->parse($data);        
       }
-      if ($result && is_array($result)) {
-        // valid data!
+      if ($result != null && is_array($result)) {
         if (!$cached && array_key_exists('USER_WORDCOUNT',$result)) {
           // fresh data
+          // update transient with longer timout
+          set_transient( $trans_id, $data, 60 * 60 * 2 );
+          // store in options table in case site is down later
           $cache = get_option('jcp_progpress_nanowrimo');
-          $cache[$uid] = $result;
+          $cache[$username] = $result;
           update_option('jcp_progpress_nanowrimo', $cache);
         }
       } else {
+        // there was an error getting new data
+        // load cached data if it exists
         $cache = get_option('jcp_progpress_nanowrimo');
-        $result = $cache[$uid];
+        if (array_key_exists( $username, $cache ) ) {
+          $result = $cache[$username];
+        }
       }
       return $result;
     }
@@ -199,7 +209,7 @@ if (!class_exists("JCP_ProgPress_NaNoWriMo")) {
       $opts = array_merge($opts, 
                           shortcode_atts(array('nanowrimo'=>''),
                                        $atts));
-      if (is_numeric($opts['nanowrimo'])) {
+      if ($opts['nanowrimo'] !== '') {
         $NaNoWriMo = new JCP_ProgPress_NaNoWriMo();
         $nano = $NaNoWriMo->get_history($opts['nanowrimo']);
         $opts['goal'] = 50000;
@@ -213,7 +223,8 @@ if (!class_exists("JCP_ProgPress_NaNoWriMo")) {
           }
         } 
         if (array_key_exists('ERROR', $nano)) {
-          $opts['error'] = '<b>(NaNoWriMo=' .
+          $opts['error'] = '<b>NaNoWriMo Wodcount API Error ' .
+            '(username=' .
             $opts['nanowrimo'] .")</b> " . $nano['ERROR'];
         }
       }
