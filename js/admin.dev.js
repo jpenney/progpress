@@ -21,11 +21,8 @@
 
 jQuery(function($) {
 
-    var jcp_pp_area;
     function toggleStyles($link, handler) {
-        if (!jcp_pp_area) {
-            jcp_pp_area = $('#jcp_progpress_sample_output');
-        }
+        var jcp_pp_area = $('#jcp_progpress_sample_output');
         if ($link.text().indexOf('Hide') !== 0) {
             $link.text($link.text().replace(/^(Show|Load) +/,'Hide '));
             jcp_pp_area.fadeIn("slow", handler);
@@ -45,9 +42,10 @@ jQuery(function($) {
 
     var loadStyles = function() {       
         var $this = $(this), 
+            nullHandler = function() { },
             href, styleArea, pleaseWait;
         if ($this.data("loaded")) {
-            toggleStyles($this);
+            toggleStyles($this, nullHandler);
         } else {
             pleaseWait = $('<span>' +
                            '<img style="vertical-align: middle" ' +
@@ -77,4 +75,7 @@ jQuery(function($) {
     };
 
     $('#jcp_progpress_preview_styles').bind('click',loadStyles);
+    $('#jcp_progpress_preview_container').show();
+
 });
+
