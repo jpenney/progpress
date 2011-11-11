@@ -4,7 +4,7 @@ Donate link: http://jasonpenney.net/donate
 Tags: progress, meter, bar, graph, wordcount, word meter, goal, tracking, counter, thermometer, writing, fundraiser, donations, NaNoWriMo
 Requires at least: 2.2
 Tested up to: 3.3
-Stable tag: 1.2
+Stable tag: 1.2.1
 	
 Easily insert progress meters into your content and/or sidebars.
 
@@ -179,6 +179,10 @@ div.jcp_pp_prog,div.jcp_pp_new {
 `
 
 == Changelog ==
+
+= 1.2.1 =
+
+* Fixed caching timeout (whoops)
 
 = 1.2 =
 

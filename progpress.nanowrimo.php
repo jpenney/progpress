@@ -3,7 +3,7 @@
 Plugin Name: ProgPress - NaNoWriMo Support
 Plugin URI: http://jasonpenney.net/wordpress-plugins/progpress/
 Description: Adds support for NaNoWriMo API to ProgPress ([progpress nanowrimo=*username* ])
-Version: 1.2
+Version: 1.2.1
 Author: Jason Penney
 Author URI: http://jasonpenney.net/
 
