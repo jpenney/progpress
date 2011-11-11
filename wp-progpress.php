@@ -3,7 +3,7 @@
 Plugin Name: ProgPress
 Plugin URI: http://jasonpenney.net/wordpress-plugins/progpress/
 Description: Easily insert progress meters into your content and/or sidebars.
-Version: 1.2
+Version: 1.2.1
 Author: Jason Penney
 Author URI: http://jasonpenney.net/
 

@@ -148,7 +148,7 @@ if (!class_exists("JCP_ProgPress_NaNoWriMo")) {
         $data =  wp_remote_retrieve_body( wp_remote_get( $query_url ) );
         // set initial transient with short timeout
         // in case it contains an error
-        set_transient( $trans_id, $data, 10 /*60*/ );
+        set_transient( $trans_id, $data, 120 );
       }
       $result = null;
       if ($data != null) {
