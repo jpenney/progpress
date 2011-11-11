@@ -3,8 +3,8 @@ Contributors: jczorkmid
 Donate link: http://jasonpenney.net/donate
 Tags: progress, meter, bar, graph, wordcount, word meter, goal, tracking, counter, thermometer, writing, fundraiser, donations, NaNoWriMo
 Requires at least: 2.2
-Tested up to: 3.0.1
-Stable tag: 1.1
+Tested up to: 3.3
+Stable tag: 1.2
 	
 Easily insert progress meters into your content and/or sidebars.
 
@@ -180,6 +180,13 @@ div.jcp_pp_prog,div.jcp_pp_new {
 
 == Changelog ==
 
+= 1.2 =
+
+* Updated the *ProgPress - NaNoWriMo Support* plugin for 2011
+* Pretty printing of numbers now handled via `number_format_i18n` for better
+  international support.
+* Admin JavaScript should only load on the ProgPress admin page.
+
 = 1.1 =
 
 * Added the *ProgPress - NaNoWriMo Support* plugin
@@ -245,11 +252,23 @@ more. Upgrade today!
 If you are participating in NaNoWriMo, ProgPress can automatically
 track your progress.  Just enable the additional *ProgPress -
 NaNoWriMo Support* plugin (in addition to ProgPress), and set the
-`nanowrimo` attribute to your NaNoWriMo user id.
+`nanowrimo` attribute to your NaNoWriMo *username* (this is a change
+from last year where your user id was used).
 
 `
-[progpress title="My NaNoWriMo Progress" nanowrimo="136732" label="words"]
+[progpress title="My NaNoWriMo Progress" nanowrimo="jczorkmid" label="words"]
 `
+
+So as to not overload their servers, the plugin caches your word count
+info, so it may not update immediately when you update your word count
+at nanowrimo.org.
+
+Note that as of November 10, 2011 the NaNoWriMo Word Count API is
+not yet officially released.  At times it seems to return invalid
+errors saying your user doesn't exist, or you don't have a novel in
+progress this year.  In my testing this clears itself up after a bit,
+and once some data has been loaded WordPress will cache it rather than
+continue to display errors if it keeps going up and down.
 
 == More Info ==
 
@@ -261,7 +280,8 @@ NaNoWriMo Support* plugin (in addition to ProgPress), and set the
 
 == Thanks ==
 
-Special thanks to [K. L. Kerr](http://www.penrefe.com/), [Chris
-Miller](http://ctmiller.net/), [Debbie
-Ohi](http://www.inkygirl.com/), and [Scott
-Philips](http://scottphillips.org/) for their feedback and support.
+Special thanks to [Kris Johnson](http://kjtoo.com/),
+[K. L. Kerr](http://www.penrefe.com/), [Chris
+Miller](http://ctmiller.net/), [Debbie Ohi](http://www.inkygirl.com/),
+and [Scott Philips](http://scottphillips.org/) for their feedback and
+support. 
